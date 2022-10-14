@@ -1,0 +1,1251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ct="urn://ru.rtlabs.election/5.0.0" targetNamespace="urn://ru.rtlabs.election/5.0.0" elementFormDefault="qualified">
+	<!-- Response -->
+	<xs:complexType name="detachVoteOrderResponseType">
+		<xs:annotation>
+			<xs:documentation>Результат приема заявления с ЕПГУ/МФЦ</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="orderId" type="ct:orderIdType">
+				<xs:annotation>
+					<xs:documentation>Идентификатор заявления</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="statusCode" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Статус заявления</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<!-- Request -->
+	<xs:complexType name="voteOrderType">
+		<xs:sequence>
+			<xs:element name="detachVoteOrder" type="ct:detachVoteOrderType"/>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="detachVoteOrderType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Заявление о голосовании на другом участке</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:choice>			
+				<xs:element name="regInfo" type="ct:regInfoType">
+					<xs:annotation>
+						<xs:documentation>Подача заявления</xs:documentation>
+					</xs:annotation>
+				</xs:element>			
+				<xs:element name="delInfo" type="ct:delInfoType">
+					<xs:annotation>
+						<xs:documentation>Удаление заявления (в текущем заявлении должны быть в точности повторены значения полей удаляемого заявления)</xs:documentation>
+					</xs:annotation>
+				</xs:element>			
+			</xs:choice>			
+			<xs:element name="orderId" type="ct:orderIdType"/>
+			<xs:element name="orderDateTime" type="ct:orderDateTimeType"/>
+			<xs:element name="esiaOid" type="ct:esiaOidType" minOccurs="0"/>
+			<xs:element name="deliverType" type="ct:deliveryTypeType"/>
+			<xs:element name="receptionPoint" type="ct:receptionPointType"/>
+			<xs:element name="voteUIK" type="ct:voteType"/>
+			<xs:element name="applicant" type="ct:applicantType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!---Подача/удаление заявления-->
+	<xs:complexType name="regInfoType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Подача заявления</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="delIndicator" type="xs:string" fixed="0">
+				<xs:annotation>
+					<xs:documentation>Признак удаления заявления</xs:documentation>
+				</xs:annotation>
+			</xs:element>			
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="delInfoType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Удаление заявления</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="delIndicator" type="xs:string" fixed="1">
+				<xs:annotation>
+					<xs:documentation>Признак удаления заявления</xs:documentation>
+				</xs:annotation>
+			</xs:element>			
+			<xs:element name="delUser" type="ct:delUserType"/>
+			<xs:element name="delReason" type="ct:delReasonType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="delUserType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">ФИО и должность сотрудника МФЦ/ЕПГУ, подавшего заявление на удаление</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="300"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="delReasonType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Описание причины удаления заявления</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="1000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="orderIdType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Идентификатор на ЕПГУ/в ИС МФЦ</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:long"/>
+	</xs:simpleType>
+	<xs:simpleType name="orderDateTimeType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Дата/время подачи заявления по местному времени</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:dateTime">
+			<xs:minInclusive value="2019-06-01T00:00:00"/>
+			<xs:maxInclusive value="2099-12-31T00:00:00"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="esiaOidType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Идентификатор пользователя в ЕСИА</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[\d]{1,20}"/>
+		</xs:restriction>
+	</xs:simpleType>	
+	<xs:simpleType name="SNILSType">
+		<xs:annotation>
+			<xs:documentation>СНИЛС</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="14" />
+			<xs:pattern value="\d{3}-\d{3}-\d{3} \d{2}" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="deliveryTypeType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Способ подачи заявления</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="epgu">
+				<xs:annotation>
+					<xs:documentation>Через ЕПГУ</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="mfc">
+				<xs:annotation>
+					<xs:documentation>Через МФЦ</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="mosru">
+				<xs:annotation>
+					<xs:documentation>Через портал mos.ru</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="receptionPointType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Данные о пункте приема заявления </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="regionCode" type="ct:regionCodeType"/>
+			<xs:element name="mfcId" type="ct:receptionPointIdType">
+				<xs:annotation>
+					<xs:documentation>Идентификатор МФЦ. Заполняется, если Тип = mfc</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="mfcName" type="ct:receptionPointNameType">
+				<xs:annotation>
+					<xs:documentation>Наименование МФЦ. Заполняется, если Тип = mfc</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="voteDate" type="ct:voteDateType">
+				<xs:annotation>
+					<xs:documentation>Дата голосования</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="voteLevel" type="ct:voteLevelType">
+				<xs:annotation>
+					<xs:documentation>Уровень выборов</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="voteVRN" type="ct:voteVRNType" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>VRN выборов</xs:documentation>
+				</xs:annotation>
+			</xs:element>			
+		</xs:sequence>
+	</xs:complexType>
+	
+	<!---Уровень выборов-->
+	<xs:simpleType name="voteLevelType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Уровень выборов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="1">
+				<xs:annotation>
+					<xs:documentation>Федеральный</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="2">
+				<xs:annotation>
+					<xs:documentation>Региональный</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>	
+		</xs:restriction>
+	</xs:simpleType>	
+	
+	<!---VRN выборов-->
+	<xs:simpleType name="voteVRNType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">VRN выборов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="15"/>
+			<xs:pattern value="[\d]{1,15}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<!---Код государства-->
+	<xs:simpleType name="countryCodeType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Код государства</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="4"><xs:annotation><xs:documentation>Афганистан</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="8"><xs:annotation><xs:documentation>Албания</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="10"><xs:annotation><xs:documentation>Антарктида</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="12"><xs:annotation><xs:documentation>Алжир</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="16"><xs:annotation><xs:documentation>Американское Самоа</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="20"><xs:annotation><xs:documentation>Андорра</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="24"><xs:annotation><xs:documentation>Ангола</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="28"><xs:annotation><xs:documentation>Антигуа и Барбуда</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="31"><xs:annotation><xs:documentation>Азербайджан</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="32"><xs:annotation><xs:documentation>Аргентина</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="36"><xs:annotation><xs:documentation>Австралия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="40"><xs:annotation><xs:documentation>Австрия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="44"><xs:annotation><xs:documentation>Багамские острова</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="48"><xs:annotation><xs:documentation>Бахрейн</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="50"><xs:annotation><xs:documentation>Бангладеш</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="51"><xs:annotation><xs:documentation>Армения</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="52"><xs:annotation><xs:documentation>Барбадос</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="56"><xs:annotation><xs:documentation>Бельгия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="60"><xs:annotation><xs:documentation>Бермуды</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="64"><xs:annotation><xs:documentation>Бутан</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="68"><xs:annotation><xs:documentation>Боливия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="70"><xs:annotation><xs:documentation>Босния и Герцеговина</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="72"><xs:annotation><xs:documentation>Ботсвана</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="74"><xs:annotation><xs:documentation>Остров Буве</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="76"><xs:annotation><xs:documentation>Бразилия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="84"><xs:annotation><xs:documentation>Белиз</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="86"><xs:annotation><xs:documentation>Британская территория в Индийском океане</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="90"><xs:annotation><xs:documentation>Соломоновы Острова</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="96"><xs:annotation><xs:documentation>Бруней-Даруссалам</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="100"><xs:annotation><xs:documentation>Болгария</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="104"><xs:annotation><xs:documentation>Мьянма</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="108"><xs:annotation><xs:documentation>Бурунди</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="112"><xs:annotation><xs:documentation>Белоруссия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="116"><xs:annotation><xs:documentation>Камбоджа</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="120"><xs:annotation><xs:documentation>Камерун</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="124"><xs:annotation><xs:documentation>Канада</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="132"><xs:annotation><xs:documentation>Кабо-Верде</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="136"><xs:annotation><xs:documentation>Острова Кайман</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="140"><xs:annotation><xs:documentation>Центральноафриканская Республика (ЦАР)</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="144"><xs:annotation><xs:documentation>Шри-Ланка</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="148"><xs:annotation><xs:documentation>Чад</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="152"><xs:annotation><xs:documentation>Чили</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="156"><xs:annotation><xs:documentation>Китай</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="158"><xs:annotation><xs:documentation>Тайвань (Китай)</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="162"><xs:annotation><xs:documentation>Остров Рождества</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="166"><xs:annotation><xs:documentation>Кокосовые (Киллинг) Острова</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="170"><xs:annotation><xs:documentation>Колумбия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="174"><xs:annotation><xs:documentation>Коморские острова</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="175"><xs:annotation><xs:documentation>Майотта</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="178"><xs:annotation><xs:documentation>Конго</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="180"><xs:annotation><xs:documentation>Демократическая Республика Конго</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="184"><xs:annotation><xs:documentation>Острова Кука</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="188"><xs:annotation><xs:documentation>Коста-Рика</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="191"><xs:annotation><xs:documentation>Хорватия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="192"><xs:annotation><xs:documentation>Куба</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="196"><xs:annotation><xs:documentation>Кипр</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="203"><xs:annotation><xs:documentation>Чехия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="204"><xs:annotation><xs:documentation>Бенин</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="208"><xs:annotation><xs:documentation>Дания</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="212"><xs:annotation><xs:documentation>Доминика</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="214"><xs:annotation><xs:documentation>Доминиканская Республика</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="218"><xs:annotation><xs:documentation>Эквадор</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="222"><xs:annotation><xs:documentation>Эль-Сальвадор</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="226"><xs:annotation><xs:documentation>Экваториальная Гвинея</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="231"><xs:annotation><xs:documentation>Эфиопия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="232"><xs:annotation><xs:documentation>Эритрея</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="233"><xs:annotation><xs:documentation>Эстония</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="234"><xs:annotation><xs:documentation>Фарерские Острова</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="238"><xs:annotation><xs:documentation>Фолклендские Острова (Мальвинские)</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="239"><xs:annotation><xs:documentation>Южная Джорджия и Южные Сандвичевы Острова</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="242"><xs:annotation><xs:documentation>Фиджи</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="246"><xs:annotation><xs:documentation>Финляндия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="248"><xs:annotation><xs:documentation>Эландские Острова</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="250"><xs:annotation><xs:documentation>Франция</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="254"><xs:annotation><xs:documentation>Французская Гвиана</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="258"><xs:annotation><xs:documentation>Французская Полинезия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="260"><xs:annotation><xs:documentation>Французские Южные Территории</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="262"><xs:annotation><xs:documentation>Джибути</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="266"><xs:annotation><xs:documentation>Габон</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="268"><xs:annotation><xs:documentation>Грузия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="270"><xs:annotation><xs:documentation>Гамбия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="275"><xs:annotation><xs:documentation>Палестина</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="276"><xs:annotation><xs:documentation>Германия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="288"><xs:annotation><xs:documentation>Гана</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="292"><xs:annotation><xs:documentation>Гибралтар</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="296"><xs:annotation><xs:documentation>Кирибати</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="300"><xs:annotation><xs:documentation>Греция</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="304"><xs:annotation><xs:documentation>Гренландия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="308"><xs:annotation><xs:documentation>Гренада</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="312"><xs:annotation><xs:documentation>Гваделупа</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="316"><xs:annotation><xs:documentation>Гуам</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="320"><xs:annotation><xs:documentation>Гватемала</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="324"><xs:annotation><xs:documentation>Гвинея</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="328"><xs:annotation><xs:documentation>Гайана</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="332"><xs:annotation><xs:documentation>Гаити</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="334"><xs:annotation><xs:documentation>Остров Херд и Острова Макдональд</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="336"><xs:annotation><xs:documentation>Папский Престол (Государство – город Ватикан)</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="340"><xs:annotation><xs:documentation>Гондурас</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="344"><xs:annotation><xs:documentation>Гонконг</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="348"><xs:annotation><xs:documentation>Венгрия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="352"><xs:annotation><xs:documentation>Исландия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="356"><xs:annotation><xs:documentation>Индия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="360"><xs:annotation><xs:documentation>Индонезия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="364"><xs:annotation><xs:documentation>Иран</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="368"><xs:annotation><xs:documentation>Ирак</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="372"><xs:annotation><xs:documentation>Ирландия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="376"><xs:annotation><xs:documentation>Израиль</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="380"><xs:annotation><xs:documentation>Италия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="384"><xs:annotation><xs:documentation>Кот д`Ивуар</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="388"><xs:annotation><xs:documentation>Ямайка</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="392"><xs:annotation><xs:documentation>Япония</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="398"><xs:annotation><xs:documentation>Казахстан</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="400"><xs:annotation><xs:documentation>Иордания</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="404"><xs:annotation><xs:documentation>Кения</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="408"><xs:annotation><xs:documentation>КНДР</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="410"><xs:annotation><xs:documentation>Республика Корея</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="414"><xs:annotation><xs:documentation>Кувейт</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="417"><xs:annotation><xs:documentation>Киргизия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="418"><xs:annotation><xs:documentation>Лаос</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="422"><xs:annotation><xs:documentation>Ливан</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="426"><xs:annotation><xs:documentation>Лесото</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="428"><xs:annotation><xs:documentation>Латвия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="430"><xs:annotation><xs:documentation>Либерия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="434"><xs:annotation><xs:documentation>Ливия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="438"><xs:annotation><xs:documentation>Лихтенштейн</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="440"><xs:annotation><xs:documentation>Литва</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="442"><xs:annotation><xs:documentation>Люксембург</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="446"><xs:annotation><xs:documentation>Макао</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="450"><xs:annotation><xs:documentation>Мадагаскар</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="454"><xs:annotation><xs:documentation>Малави</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="458"><xs:annotation><xs:documentation>Малайзия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="462"><xs:annotation><xs:documentation>Мальдивы</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="466"><xs:annotation><xs:documentation>Мали</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="470"><xs:annotation><xs:documentation>Мальта</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="474"><xs:annotation><xs:documentation>Мартиника</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="478"><xs:annotation><xs:documentation>Мавритания</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="480"><xs:annotation><xs:documentation>Маврикий</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="484"><xs:annotation><xs:documentation>Мексика</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="492"><xs:annotation><xs:documentation>Монако</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="496"><xs:annotation><xs:documentation>Монголия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="498"><xs:annotation><xs:documentation>Молдавия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="499"><xs:annotation><xs:documentation>Черногория</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="500"><xs:annotation><xs:documentation>Монтсеррат</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="504"><xs:annotation><xs:documentation>Марокко</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="508"><xs:annotation><xs:documentation>Мозамбик</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="512"><xs:annotation><xs:documentation>Оман</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="516"><xs:annotation><xs:documentation>Намибия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="520"><xs:annotation><xs:documentation>Науру</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="524"><xs:annotation><xs:documentation>Непал</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="528"><xs:annotation><xs:documentation>Нидерланды</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="530"><xs:annotation><xs:documentation>Нидерландские Антилы</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="531"><xs:annotation><xs:documentation>Кюрасао</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="533"><xs:annotation><xs:documentation>Аруба</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="534"><xs:annotation><xs:documentation>Сен-Мартен (нидерландская часть)</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="535"><xs:annotation><xs:documentation>Бонэйр, Синт-Эстатиус и Саба</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="540"><xs:annotation><xs:documentation>Новая Каледония</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="548"><xs:annotation><xs:documentation>Вануату</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="554"><xs:annotation><xs:documentation>Новая Зеландия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="558"><xs:annotation><xs:documentation>Никарагуа</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="562"><xs:annotation><xs:documentation>Нигер</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="566"><xs:annotation><xs:documentation>Нигерия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="570"><xs:annotation><xs:documentation>Ниуэ</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="574"><xs:annotation><xs:documentation>Остров Норфолк</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="578"><xs:annotation><xs:documentation>Норвегия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="580"><xs:annotation><xs:documentation>Северные Марианские Острова</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="581"><xs:annotation><xs:documentation>Малые Тихоокеанские Отдаленные Острова Соединенных Штатов</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="583"><xs:annotation><xs:documentation>Микронезия, Федеративные Штаты</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="584"><xs:annotation><xs:documentation>Маршалловы Острова</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="585"><xs:annotation><xs:documentation>Палау</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="586"><xs:annotation><xs:documentation>Пакистан</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="591"><xs:annotation><xs:documentation>Панама</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="598"><xs:annotation><xs:documentation>Папуа Новая Гвинея</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="600"><xs:annotation><xs:documentation>Парагвай</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="604"><xs:annotation><xs:documentation>Перу</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="608"><xs:annotation><xs:documentation>Филиппины</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="612"><xs:annotation><xs:documentation>Питкерн</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="616"><xs:annotation><xs:documentation>Польша</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="620"><xs:annotation><xs:documentation>Португалия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="624"><xs:annotation><xs:documentation>Гвинея-Бисау</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="626"><xs:annotation><xs:documentation>Тимор-Лесте</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="630"><xs:annotation><xs:documentation>Пуэрто-Рико</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="634"><xs:annotation><xs:documentation>Катар</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="638"><xs:annotation><xs:documentation>Реюньон</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="642"><xs:annotation><xs:documentation>Румыния</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="646"><xs:annotation><xs:documentation>Руанда</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="652"><xs:annotation><xs:documentation>Сен-Бартелеми</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="654"><xs:annotation><xs:documentation>Святая Елена, Остров Вознесения, Тристан-да-Кунья</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="659"><xs:annotation><xs:documentation>Сент-Китс и Невис</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="660"><xs:annotation><xs:documentation>Ангилья</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="662"><xs:annotation><xs:documentation>Сент-Люсия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="663"><xs:annotation><xs:documentation>Сен-Мартен</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="666"><xs:annotation><xs:documentation>Сен-Пьер и Микелон</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="670"><xs:annotation><xs:documentation>Сент-Винсент и Гренадины</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="674"><xs:annotation><xs:documentation>Сан-Марино</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="678"><xs:annotation><xs:documentation>Сан-Томе и Принсипи</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="682"><xs:annotation><xs:documentation>Саудовская Аравия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="686"><xs:annotation><xs:documentation>Сенегал</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="688"><xs:annotation><xs:documentation>Сербия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="690"><xs:annotation><xs:documentation>Сейшельские Острова</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="694"><xs:annotation><xs:documentation>Сьерра-Леоне</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="702"><xs:annotation><xs:documentation>Сингапур</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="703"><xs:annotation><xs:documentation>Словакия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="704"><xs:annotation><xs:documentation>Вьетнам</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="705"><xs:annotation><xs:documentation>Словения</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="706"><xs:annotation><xs:documentation>Сомали</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="710"><xs:annotation><xs:documentation>ЮАР</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="716"><xs:annotation><xs:documentation>Зимбабве</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="724"><xs:annotation><xs:documentation>Испания</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="728"><xs:annotation><xs:documentation>Южный Судан</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="729"><xs:annotation><xs:documentation>Судан</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="732"><xs:annotation><xs:documentation>Западная Сахара</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="740"><xs:annotation><xs:documentation>Суринам</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="744"><xs:annotation><xs:documentation>Шпицберген и Ян Майен</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="748"><xs:annotation><xs:documentation>Свазиленд</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="752"><xs:annotation><xs:documentation>Швеция</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="756"><xs:annotation><xs:documentation>Швейцария</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="760"><xs:annotation><xs:documentation>Сирия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="762"><xs:annotation><xs:documentation>Таджикистан</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="764"><xs:annotation><xs:documentation>Таиланд</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="768"><xs:annotation><xs:documentation>Того</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="772"><xs:annotation><xs:documentation>Токелау</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="776"><xs:annotation><xs:documentation>Тонга</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="780"><xs:annotation><xs:documentation>Тринидад и Тобаго</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="784"><xs:annotation><xs:documentation>Объединенные Арабские Эмираты</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="788"><xs:annotation><xs:documentation>Тунис</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="792"><xs:annotation><xs:documentation>Турция</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="795"><xs:annotation><xs:documentation>Туркменистан</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="796"><xs:annotation><xs:documentation>Острова Теркс и Кайкос</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="798"><xs:annotation><xs:documentation>Тувалу</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="800"><xs:annotation><xs:documentation>Уганда</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="804"><xs:annotation><xs:documentation>Украина</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="807"><xs:annotation><xs:documentation>Македония</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="818"><xs:annotation><xs:documentation>Египет</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="826"><xs:annotation><xs:documentation>Великобритания</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="831"><xs:annotation><xs:documentation>Гернси</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="832"><xs:annotation><xs:documentation>Джерси</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="833"><xs:annotation><xs:documentation>Остров Мэн</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="834"><xs:annotation><xs:documentation>Танзания</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="840"><xs:annotation><xs:documentation>США</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="850"><xs:annotation><xs:documentation>Виргинские Острова, США</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="854"><xs:annotation><xs:documentation>Буркина-Фасо</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="858"><xs:annotation><xs:documentation>Уругвай</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="860"><xs:annotation><xs:documentation>Узбекистан</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="862"><xs:annotation><xs:documentation>Венесуэла</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="876"><xs:annotation><xs:documentation>Уолис и Футуна</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="882"><xs:annotation><xs:documentation>Самоа</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="893"><xs:annotation><xs:documentation>Виргинские Острова, Великобритания</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="894"><xs:annotation><xs:documentation>Абхазия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="895"><xs:annotation><xs:documentation>Южная Осетия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="896"><xs:annotation><xs:documentation>Замбия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="897"><xs:annotation><xs:documentation>Йемен</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1000"><xs:annotation><xs:documentation>Китай с учетом Тайваня</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1001"><xs:annotation><xs:documentation>Новая Зеландия, Тонга и Самоа</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1002"><xs:annotation><xs:documentation>Бразилия и Суринам</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1003"><xs:annotation><xs:documentation>Венесуэла, Доминиканская Республика и Гаити</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1004"><xs:annotation><xs:documentation>Мексика и Белиз</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1005"><xs:annotation><xs:documentation>ЮАР и Лесото</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1006"><xs:annotation><xs:documentation>город Байконур</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1007"><xs:annotation><xs:documentation>Ангола и Сан-Томе и Принсипи</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1008"><xs:annotation><xs:documentation>Бенин и Того</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1009"><xs:annotation><xs:documentation>Босния и Герцеговина</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1010"><xs:annotation><xs:documentation>Гана и Либерия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1011"><xs:annotation><xs:documentation>Гвинея и Сьерра-Леоне</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1012"><xs:annotation><xs:documentation>Джибути и Сомали</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1013"><xs:annotation><xs:documentation>Зимбабве и Малави</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1014"><xs:annotation><xs:documentation>Индонезия и Восточный Тимор</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1015"><xs:annotation><xs:documentation>Камерун и Экватор. Гвинея</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1016"><xs:annotation><xs:documentation>Кот д'Ивуар и Буркина-Фасо</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1017"><xs:annotation><xs:documentation>Мадагаскар и Коморские острова</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1018"><xs:annotation><xs:documentation>Мали и Нигер</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1019"><xs:annotation><xs:documentation>Мозамбик и Свазиленд</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1020"><xs:annotation><xs:documentation>Никарагуа, Гондурас и Сальвадор</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1021"><xs:annotation><xs:documentation>Сенегал и Гамбия</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1022"><xs:annotation><xs:documentation>Уганда и Южный Судан</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1023"><xs:annotation><xs:documentation>Филиппины и Палау</xs:documentation></xs:annotation></xs:enumeration>
+			<xs:enumeration value="1024"><xs:annotation><xs:documentation>Шри-Ланка и Мальдивы</xs:documentation></xs:annotation></xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<!---Код субъекта-->
+	<xs:simpleType name="regionCodeType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Код субъекта</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="1">
+				<xs:annotation>
+					<xs:documentation>Республика Адыгея (Адыгея)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="2">
+				<xs:annotation>
+					<xs:documentation>Республика Башкортостан</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="3">
+				<xs:annotation>
+					<xs:documentation>Республика Бурятия</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="4">
+				<xs:annotation>
+					<xs:documentation>Республика Алтай</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="5">
+				<xs:annotation>
+					<xs:documentation>Республика Дагестан</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="6">
+				<xs:annotation>
+					<xs:documentation>Республика Ингушетия</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="7">
+				<xs:annotation>
+					<xs:documentation>Кабардино-Балкарская Республика</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="8">
+				<xs:annotation>
+					<xs:documentation>Республика Калмыкия</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="9">
+				<xs:annotation>
+					<xs:documentation>Карачаево-Черкесская Республика</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="10">
+				<xs:annotation>
+					<xs:documentation>Республика Карелия</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="11">
+				<xs:annotation>
+					<xs:documentation>Республика Коми</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="12">
+				<xs:annotation>
+					<xs:documentation>Республика Марий Эл</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="13">
+				<xs:annotation>
+					<xs:documentation>Республика Мордовия</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="14">
+				<xs:annotation>
+					<xs:documentation>Республика Саха (Якутия)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="15">
+				<xs:annotation>
+					<xs:documentation>Республика Северная Осетия – Алания</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="16">
+				<xs:annotation>
+					<xs:documentation>Республика Татарстан (Татарстан)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="17">
+				<xs:annotation>
+					<xs:documentation>Республика Тыва</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="18">
+				<xs:annotation>
+					<xs:documentation>Удмуртская Республика</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="19">
+				<xs:annotation>
+					<xs:documentation>Республика Хакасия</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="20">
+				<xs:annotation>
+					<xs:documentation>Чеченская Республика</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="21">
+				<xs:annotation>
+					<xs:documentation>Чувашская Республика – Чувашия</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="22">
+				<xs:annotation>
+					<xs:documentation>Алтайский край</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="23">
+				<xs:annotation>
+					<xs:documentation>Краснодарский край</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="24">
+				<xs:annotation>
+					<xs:documentation>Красноярский край</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="25">
+				<xs:annotation>
+					<xs:documentation>Приморский край</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="26">
+				<xs:annotation>
+					<xs:documentation>Ставропольский край</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="27">
+				<xs:annotation>
+					<xs:documentation>Хабаровский край</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="28">
+				<xs:annotation>
+					<xs:documentation>Амурская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="29">
+				<xs:annotation>
+					<xs:documentation>Архангельская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="30">
+				<xs:annotation>
+					<xs:documentation>Астраханская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="31">
+				<xs:annotation>
+					<xs:documentation>Белгородская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="32">
+				<xs:annotation>
+					<xs:documentation>Брянская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="33">
+				<xs:annotation>
+					<xs:documentation>Владимирская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="34">
+				<xs:annotation>
+					<xs:documentation>Волгоградская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="35">
+				<xs:annotation>
+					<xs:documentation>Вологодская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="36">
+				<xs:annotation>
+					<xs:documentation>Воронежская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="37">
+				<xs:annotation>
+					<xs:documentation>Ивановская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="38">
+				<xs:annotation>
+					<xs:documentation>Иркутская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="39">
+				<xs:annotation>
+					<xs:documentation>Калининградская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="40">
+				<xs:annotation>
+					<xs:documentation>Калужская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="41">
+				<xs:annotation>
+					<xs:documentation>Камчатский край</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="42">
+				<xs:annotation>
+					<xs:documentation>Кемеровская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="43">
+				<xs:annotation>
+					<xs:documentation>Кировская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="44">
+				<xs:annotation>
+					<xs:documentation>Костромская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="45">
+				<xs:annotation>
+					<xs:documentation>Курганская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="46">
+				<xs:annotation>
+					<xs:documentation>Курская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="47">
+				<xs:annotation>
+					<xs:documentation>Ленинградская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="48">
+				<xs:annotation>
+					<xs:documentation>Липецкая область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="49">
+				<xs:annotation>
+					<xs:documentation>Магаданская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="50">
+				<xs:annotation>
+					<xs:documentation>Московская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="51">
+				<xs:annotation>
+					<xs:documentation>Мурманская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="52">
+				<xs:annotation>
+					<xs:documentation>Нижегородская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="53">
+				<xs:annotation>
+					<xs:documentation>Новгородская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="54">
+				<xs:annotation>
+					<xs:documentation>Новосибирская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="55">
+				<xs:annotation>
+					<xs:documentation>Омская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="56">
+				<xs:annotation>
+					<xs:documentation>Оренбургская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="57">
+				<xs:annotation>
+					<xs:documentation>Орловская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="58">
+				<xs:annotation>
+					<xs:documentation>Пензенская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="59">
+				<xs:annotation>
+					<xs:documentation>Пермский край</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="60">
+				<xs:annotation>
+					<xs:documentation>Псковская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="61">
+				<xs:annotation>
+					<xs:documentation>Ростовская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="62">
+				<xs:annotation>
+					<xs:documentation>Рязанская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="63">
+				<xs:annotation>
+					<xs:documentation>Самарская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="64">
+				<xs:annotation>
+					<xs:documentation>Саратовская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="65">
+				<xs:annotation>
+					<xs:documentation>Сахалинская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="66">
+				<xs:annotation>
+					<xs:documentation>Свердловская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="67">
+				<xs:annotation>
+					<xs:documentation>Смоленская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="68">
+				<xs:annotation>
+					<xs:documentation>Тамбовская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="69">
+				<xs:annotation>
+					<xs:documentation>Тверская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="70">
+				<xs:annotation>
+					<xs:documentation>Томская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="71">
+				<xs:annotation>
+					<xs:documentation>Тульская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="72">
+				<xs:annotation>
+					<xs:documentation>Тюменская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="73">
+				<xs:annotation>
+					<xs:documentation>Ульяновская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="74">
+				<xs:annotation>
+					<xs:documentation>Челябинская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="75">
+				<xs:annotation>
+					<xs:documentation>Забайкальский край</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="76">
+				<xs:annotation>
+					<xs:documentation>Ярославская область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="77">
+				<xs:annotation>
+					<xs:documentation>Город Москва</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="78">
+				<xs:annotation>
+					<xs:documentation>Город Санкт-Петербург</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="79">
+				<xs:annotation>
+					<xs:documentation>Еврейская автономная область</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="83">
+				<xs:annotation>
+					<xs:documentation>Ненецкий автономный округ</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="86">
+				<xs:annotation>
+					<xs:documentation>Ханты-Мансийский автономный округ – Югра</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="87">
+				<xs:annotation>
+					<xs:documentation>Чукотский автономный округ</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="89">
+				<xs:annotation>
+					<xs:documentation>Ямало-Ненецкий автономный округ</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="93">
+				<xs:annotation>
+					<xs:documentation>Республика Крым</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="94">
+				<xs:annotation>
+					<xs:documentation>Город Севастополь</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="receptionPointIdType">
+		<xs:annotation>
+			<xs:documentation>Идентификатор МФЦ. Заполняется, если Тип = mfc</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="receptionPointNameType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Наименование МФЦ. Заполняется, если Тип = mfc</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="2000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="voteType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Данные УИК голосования</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:choice>
+				<xs:element name="countryCode" type="ct:countryCodeType"/>
+				<xs:element name="regionCode" type="ct:regionCodeType"/>
+			</xs:choice>
+			<xs:element name="nameUikRegion" type="ct:nameUikRegionType" minOccurs="0"/>
+			<xs:element name="uikType" type="ct:UikTypeType"/>
+			<xs:element name="uikNum" type="ct:voteUIKType"/>
+			<xs:element name="addressUik" type="ct:addressUIKType" minOccurs="0"/>
+			<xs:element name="oikNum" type="ct:oikNumType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="addressUIKType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Адрес УИК голосования</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="2000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="nameUikRegionType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Наименование субъекта РФ голосования</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="200"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="voteUIKType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Номер УИК</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="4"/>
+			<xs:pattern value="[\d]{4}"/>
+		</xs:restriction>
+	</xs:simpleType>	
+	<xs:simpleType name="oikNumType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Номер одномандатного избирательного округа голосования</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[\d]{1,3}"/>
+		</xs:restriction>
+	</xs:simpleType>
+    <xs:simpleType name="UikTypeType">
+        <xs:annotation>
+            <xs:documentation>Тип УИК</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="usual"/>
+            <xs:enumeration value="digital"/>
+        </xs:restriction>
+    </xs:simpleType>	
+	
+	<xs:complexType name="applicantType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Сведения о заявителе</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SNILS" type="ct:SNILSType" minOccurs="0"/>
+			<xs:element name="lastName" type="ct:lastNameType"/>
+			<xs:element name="firstName" type="ct:firstNameType"/>
+			<xs:element name="middleName" type="ct:middleNameType" minOccurs="0"/>
+			<xs:element name="birthDate" type="ct:birthDateType"/>
+			<xs:choice>			
+				<xs:element name="passport" type="ct:applicantDocumentType"/>
+				<xs:element name="tempNum">
+					<xs:annotation>
+						<xs:documentation>Номер временного удостоверения личности</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:maxLength value="50"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>			
+			</xs:choice>			
+			<xs:element name="phone" type="ct:applicantPhoneType" minOccurs="0"/>
+			<xs:choice>			
+				<xs:element name="permRegInfo" type="ct:applicantPermRegInfoType">
+					<xs:annotation>
+						<xs:documentation>Наличие постоянной регистрации на территории РФ</xs:documentation>
+					</xs:annotation>
+				</xs:element>			
+				<xs:element name="permRegNoneInfo" type="ct:applicantPermRegNoneInfoType">
+					<xs:annotation>
+						<xs:documentation>Отсутствие постоянной регистрации на территории РФ</xs:documentation>
+					</xs:annotation>
+				</xs:element>			
+			</xs:choice>			
+			<xs:choice>			
+				<xs:element name="voteInfo" type="ct:applicantVoteInfoType">
+					<xs:annotation>
+						<xs:documentation>Голосование по месту постоянной регистрации</xs:documentation>
+					</xs:annotation>
+				</xs:element>			
+				<xs:element name="voteTempInfo" type="ct:applicantVoteTempInfoType">
+					<xs:annotation>
+						<xs:documentation>Голосование по месту временной регистрации</xs:documentation>
+					</xs:annotation>
+				</xs:element>			
+			</xs:choice>			
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="lastNameType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Фамилия</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="40"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="firstNameType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Имя</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="40"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="middleNameType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Отчество</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="40"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="birthDateType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Дата рождения</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:date"/>
+	</xs:simpleType>
+	<xs:simpleType name="voteDateType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Дата голосования</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:date"/>
+	</xs:simpleType>
+	<xs:complexType name="applicantDocumentType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Паспортные данные заявителя</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="passSeries">
+				<xs:annotation>
+					<xs:documentation>Серия паспорта</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="[\d]{4}"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="passNumber">
+				<xs:annotation>
+					<xs:documentation>Номер паспорта</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="[\d]{6}"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="applicantPhoneType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Номер телефона избирателя</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="10"/>
+			<xs:pattern value="[\d]{10}"/>
+		</xs:restriction>
+	</xs:simpleType>	
+
+	<!---Регистрация в РФ-->
+	<xs:complexType name="applicantPermRegInfoType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Имеется постоянная регистрация на территории РФ</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PermRegNoneIndicator" type="xs:string" fixed="0"/>
+			<xs:element name="address" type="ct:applicantAddressType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="applicantPermRegNoneInfoType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Отсутствует постоянная регистрация на территории РФ</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PermRegNoneIndicator" type="xs:string" fixed="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="applicantAddressType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Адрес места жительства заявителя согласно ДУЛ</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="regionCode" type="ct:regionCodeType">
+				<xs:annotation>
+					<xs:documentation>Код субъекта МЖ</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="district" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Муниципальный район места жительства согласно ДУЛ</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="200"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="settlement">
+				<xs:annotation>
+					<xs:documentation>Населенный пункт места жительства согласно ДУЛ</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="200"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="street" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Улица (микрорайон) места жительства согласно ДУЛ</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="200"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="house" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Дом места жительства согласно ДУЛ</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="200"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="building" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Корпус (строение, владение) места жительства согласно ДУЛ</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="200"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="flat" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Квартира (комната) места жительства согласно ДУЛ</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="200"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<!---Регистрация постоянная/временная-->
+	<xs:complexType name="applicantVoteInfoType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Голосование по месту постоянной регистрации</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="voteTempRegIndicator" type="xs:string" fixed="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="applicantVoteTempInfoType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Голосование по месту временной регистрации</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="voteTempRegIndicator" type="xs:string" fixed="1"/>
+			<xs:element name="regDate" type="ct:applicantRegDateType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="applicantRegDateType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">Дата начала срока действия  регистрации по месту пребывания (не может быть больше текущей и меньше 01.01.2009)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:date">
+			<xs:minInclusive value="2009-01-01"/>
+			<xs:maxInclusive value="2099-12-31"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="detachVoteOrderResponse" type="ct:detachVoteOrderResponseType"/>
+	<xs:element name="voteOrder" type="ct:voteOrderType"/>
+</xs:schema>
